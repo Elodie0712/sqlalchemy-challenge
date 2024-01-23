@@ -12,7 +12,7 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func, inspect
 from sqlalchemy.orm import Query
-from flask import Flask
+from flask import Flask, jsonify
  
 #################################################
 # Database Setup
@@ -28,7 +28,7 @@ Base.prepare(engine, reflect=True)
 # Save references to each table
 measurement=Base.classes.measurement
 station= Base.classes.station
-
+print(station)
 # Create our session (link) from Python to the DB
 session = Session(engine)
 
@@ -79,11 +79,13 @@ def precipitation():
 
 @app.route("/api/v1.0/stations")
 def stations():
+    station= Base.classes.station
+    print(station)
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
     # Perform a query to retrieve the data for stations
-    query = session.query(station.id, station.station, station.name, station.latitude, station.longitude).all()
+    query = session.query( station.station, station.name, station.latitude, station.longitude).all()
 
     # Close the session
     session.close()
@@ -92,9 +94,8 @@ def stations():
     station_list = []
 
     # Iterate through the query results and create a dictionary for each station
-    for id, station, name, latitude, longitude in query:
+    for station, name, latitude, longitude in query:
         station_dict = {}
-        station_dict["id"] = id
         station_dict["station"] = station
         station_dict["name"] = name
         station_dict["latitude"] = latitude
@@ -131,7 +132,6 @@ def tobs():
     return jsonify(to_list)
 
 @app.route("/api/v1.0/<start>")
-
 def temps_start(start):
        # Create our session (link) from Python to the DB
     session = Session(engine)
